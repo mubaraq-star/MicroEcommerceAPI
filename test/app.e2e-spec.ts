@@ -1,12 +1,12 @@
+import * as request from 'supertest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -15,10 +15,30 @@ describe('AppController (e2e)', () => {
     await app.init();
   });
 
-  it('/ (GET)', () => {
+  it('/register (POST)', () => {
     return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
+      .post('/register')
+      .send({
+        name: 'John Doe',
+        email: 'john@example.com',
+        password: 'password',
+      })
+      .expect(201)
+      .then((response) => {
+        expect(response.body).toHaveProperty('id');
+        expect(response.body).toHaveProperty('name', 'John Doe');
+      });
   });
+
+  it('/login (POST)', () => {
+    return request(app.getHttpServer())
+      .post('/login')
+      .send({ email: 'john@example.com', password: 'password' })
+      .expect(200)
+      .then((response) => {
+        expect(response.body).toHaveProperty('access_token');
+      });
+  });
+
+  // More integration tests...
 });
